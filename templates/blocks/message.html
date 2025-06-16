@@ -1,0 +1,5 @@
+{% if message %}
+{% for category, text in message %}
+<div class="{{ category }}" role="alert">{{ text }}</div>
+{% endfor %}
+{% endif %}
