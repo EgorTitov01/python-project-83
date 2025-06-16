@@ -29,7 +29,7 @@ def urls_index():
 
 @app.post('/urls')
 def urls_post():
-    message = {}
+    message = []
     url = request.form.get('url')
     # Проверяем введённый URL
     if not is_valid(url):
@@ -46,6 +46,7 @@ def urls_post():
     # Подготавливаем данные и заносим в базу
     url_data = prepare_data(url)
     repo.save(url_data)
+    flash('Страница успешно добавлена', 'alert alert-success')
     return redirect(url_for('url_show', id=url_data['id']))
 
 
