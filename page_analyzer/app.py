@@ -6,6 +6,8 @@ from urllib.parse import urlparse
 from validators.url import url as validate
 from datetime import date
 from .repositories import UrlsRepository, ChecksRepository
+import requests
+from requests.exceptions import HTTPError
 
 
 load_dotenv()
@@ -64,12 +66,22 @@ def url_show(id):
 
 @app.post('/urls/<int:id>/checks')
 def checks_post(id):
-    if not urls_repo.find_by_id(id):
+    url_data = urls_repo.find_by_id(id)
+    if not url_data:
         abort(404)
-    check_data = {'url_id': id, 'created_at': date.today()}
+    # Делаем запрос по URL
+    resp = _request(url_data['name'])
+    if not resp:
+        flash('Произошла ошибка при проверке', 'alert alert-danger')
+        return redirect(url_for('url_show', id=id))
+
+    check_data = {
+        'url_id': id,
+        'status_code': resp['status_code'],
+        'created_at': date.today()
+    }
     # Подготавливаем данные и заносим в базу
-    check = _format(check_data, 'check')
-    checks_repo.save(check)
+    checks_repo.save(check_data)
     flash('Страница успешно проверена', 'alert alert-success')
     return redirect(url_for('url_show', id=id))
 
@@ -97,3 +109,15 @@ def _format(data, category):
 
     elif category == 'check':
         return {'url_id': data['url_id'], 'created_at': date.today()}
+
+
+def _request(url):
+    try:
+        resp = requests.get(url, allow_redirects=True, timeout=5.0)
+        resp.raise_for_status()
+        return {'status_code': resp.status_code}
+    except HTTPError:
+        if resp.status_code < 500:
+            return {'status_code': resp.status_code}
+    except Exception:
+        pass

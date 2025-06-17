@@ -49,11 +49,11 @@
       {% for check_data in checks_data %}
       <tr>
         <td>{{ check_data['id'] }}</td>
+        <td>{{ check_data['status_code']|default('', true) }}</td>
         <td></td>
         <td></td>
         <td></td>
-        <td></td>
-        <td>{{ check_data['created_at'] }}</td>
+        <td>{{ check_data['created_at']|default('', true) }}</td>
       </tr>
       {% endfor %}
     </tbody>
