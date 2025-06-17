@@ -61,9 +61,9 @@ def url_show(id):
     return render_template('url_show.html', url_data=url_data,
                            checks_data=checks_data, message=message)
 
+
 @app.post('/urls/<int:id>/checks')
 def checks_post(id):
-    message = []
     if not urls_repo.find_by_id(id):
         abort(404)
     check_data = {'url_id': id, 'created_at': date.today()}
@@ -86,7 +86,8 @@ def transform_url(url):   # Убирает ненужные части URL
 
 def is_valid(url_str):
     return (
-        validate(url_str, private=False, may_have_port=True) and len(url_str) <= 255
+        validate(url_str, private=False, may_have_port=True)
+        and len(url_str) <= 255
     )
 
 

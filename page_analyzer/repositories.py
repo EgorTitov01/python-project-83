@@ -17,7 +17,7 @@ class UrlsRepository:
                     urls.id AS id,
                     name,
                     checks.created_at AS check_date,
-                    status_code     
+                    status_code
                 FROM urls LEFT JOIN url_checks AS checks
                     ON urls.id = checks.url_id
                 WHERE checks.id in (
@@ -101,7 +101,6 @@ class ChecksRepository:
                 )
 
             conn.commit()
-
 
     def clear(self):
         with self.get_connection() as conn:

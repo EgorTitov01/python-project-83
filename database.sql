@@ -13,9 +13,3 @@ CREATE TABLE IF NOT EXISTS url_checks (
     description TEXT,
     created_at DATE DEFAULT CURRENT_DATE
 );
-
-SELECT
-    url_id
-    MAX(id),
-FROM url_checks
-GROUP BY url_id
