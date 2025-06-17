@@ -7,9 +7,10 @@ CREATE TABLE IF NOT EXISTS urls (
 CREATE TABLE IF NOT EXISTS url_checks (
     id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     url_id INTEGER NOT NULL,
-    status_code INTEGER NOT NULL,
+    status_code INTEGER,
     h1 TEXT,
     title TEXT,
     description TEXT,
     created_at DATE DEFAULT CURRENT_DATE
 );
+
