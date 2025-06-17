@@ -25,6 +25,8 @@
               {{ url_data['name'] }}
             </a>
           </td>
+          <td>{{ url_data['check_date']|default('', true) }}</td>
+          <td>{{ url_data['status_code']|default('', true) }}</td>
         </tr>
     {% endfor %}
     </tbody>

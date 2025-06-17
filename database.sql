@@ -3,3 +3,19 @@ CREATE TABLE IF NOT EXISTS urls (
     name VARCHAR(255) UNIQUE NOT NULL,
     created_at DATE NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS url_checks (
+    id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    url_id INTEGER NOT NULL,
+    status_code INTEGER NOT NULL,
+    h1 TEXT,
+    title TEXT,
+    description TEXT,
+    created_at DATE DEFAULT CURRENT_DATE
+);
+
+SELECT
+    url_id
+    MAX(id),
+FROM url_checks
+GROUP BY url_id
