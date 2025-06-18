@@ -8,6 +8,7 @@ from datetime import date
 from .repositories import UrlsRepository, ChecksRepository
 import requests
 from requests.exceptions import HTTPError
+from bs4 import BeautifulSoup
 
 
 load_dotenv()
@@ -47,7 +48,7 @@ def urls_post():
         return redirect(url_for('url_show', id=same_url_data['id']))
 
     # Подготавливаем данные и заносим в базу
-    url_data = _format(url, 'url')
+    url_data = prepare_url_data(url)
     urls_repo.save(url_data)
     flash('Страница успешно добавлена', 'alert alert-success')
     return redirect(url_for('url_show', id=url_data['id']))
@@ -70,16 +71,16 @@ def checks_post(id):
     if not url_data:
         abort(404)
     # Делаем запрос по URL
-    resp = _request(url_data['name'])
+    resp = send_request(url_data['name'])
     if not resp:
         flash('Произошла ошибка при проверке', 'alert alert-danger')
         return redirect(url_for('url_show', id=id))
 
-    check_data = {
+
+    check_data = prepare_check_data({
         'url_id': id,
-        'status_code': resp['status_code'],
-        'created_at': date.today()
-    }
+        'resp': resp 
+    })
     # Подготавливаем данные и заносим в базу
     checks_repo.save(check_data)
     flash('Страница успешно проверена', 'alert alert-success')
@@ -102,22 +103,52 @@ def is_valid(url_str):
         and len(url_str) <= 255
     )
 
+def parse_resp(resp):
+    soup = BeautifulSoup(resp.text, 'html.parser')
+    try:
+        title = soup.head.title.get_text()
+    except AttributeError:
+        title = ''
+    try:
+        description = soup.find(
+            'meta', attrs={'name': 'description'}).get('content')
+    except AttributeError:
+        description = ''
+    try:
+        h1_content = ', '.join(el.get_text(strip=True)
+                      for el in soup.body.find_all('h1'))
+    except AttributeError:
+        h1_content = ''
 
-def _format(data, category):
-    if category == 'url':
+    return dict(title=title, description=str(description), h1_content=h1_content)
+
+
+def prepare_url_data(data):
         return {'name': data, 'created_at': date.today()}
 
-    elif category == 'check':
-        return {'url_id': data['url_id'], 'created_at': date.today()}
+
+def prepare_check_data(data):
+    tags = {}
+    status_code = data['resp'].status_code
+    if status_code == 200:
+        tags = parse_resp(data['resp'])
+    return dict(
+        url_id=data['url_id'],
+        created_at=date.today(),
+        status_code=status_code,
+        **tags
+        )
 
 
-def _request(url):
+
+
+def send_request(url):
     try:
-        resp = requests.get(url, allow_redirects=True, timeout=5.0)
+        resp = requests.get(url, allow_redirects=True, timeout=3.0)
         resp.raise_for_status()
-        return {'status_code': resp.status_code}
+        return resp
     except HTTPError:
-        if resp.status_code < 500:
-            return {'status_code': resp.status_code}
+        if 400 <= resp.status_code < 500:
+            return resp
     except Exception:
         pass

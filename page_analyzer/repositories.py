@@ -95,12 +95,22 @@ class ChecksRepository:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO url_checks (url_id, status_code, created_at)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO url_checks (
+                        url_id, 
+                        status_code, 
+                        h1,
+                        title,
+                        description,
+                        created_at
+                        )
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     """,
                     (
                         check_data['url_id'],
                         check_data['status_code'],
+                        check_data['h1_content'],
+                        check_data['title'],
+                        check_data['description'],
                         check_data['created_at']
                     ))
 
