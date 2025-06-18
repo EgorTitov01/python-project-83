@@ -76,10 +76,9 @@ def checks_post(id):
         flash('Произошла ошибка при проверке', 'alert alert-danger')
         return redirect(url_for('url_show', id=id))
 
-
     check_data = prepare_check_data({
         'url_id': id,
-        'resp': resp 
+        'resp': resp
     })
     # Подготавливаем данные и заносим в базу
     checks_repo.save(check_data)
@@ -103,6 +102,7 @@ def is_valid(url_str):
         and len(url_str) <= 255
     )
 
+
 def parse_resp(resp):
     soup = BeautifulSoup(resp.text, 'html.parser')
     try:
@@ -116,15 +116,16 @@ def parse_resp(resp):
         description = ''
     try:
         h1_content = ', '.join(el.get_text(strip=True)
-                      for el in soup.body.find_all('h1'))
+                               for el in soup.body.find_all('h1'))
     except AttributeError:
         h1_content = ''
 
-    return dict(title=title, description=str(description), h1_content=h1_content)
+    return dict(title=title, description=str(description),
+                h1_content=h1_content)
 
 
 def prepare_url_data(data):
-        return {'name': data, 'created_at': date.today()}
+    return {'name': data, 'created_at': date.today()}
 
 
 def prepare_check_data(data):
@@ -138,8 +139,6 @@ def prepare_check_data(data):
         status_code=status_code,
         **tags
         )
-
-
 
 
 def send_request(url):

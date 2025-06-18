@@ -96,8 +96,8 @@ class ChecksRepository:
                 cur.execute(
                     """
                     INSERT INTO url_checks (
-                        url_id, 
-                        status_code, 
+                        url_id,
+                        status_code,
                         h1,
                         title,
                         description,
