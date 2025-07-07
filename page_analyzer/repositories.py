@@ -5,7 +5,7 @@ from psycopg2.pool import SimpleConnectionPool
 class UrlsRepository:
     def __init__(self, db_url):
         self.db_url = db_url
-        self.connection_pool = SimpleConnectionPool(4, 5, self.db_url)
+        self.connection_pool = SimpleConnectionPool(4, 5, dsn=db_url)
 
     def get_connection(self):
         return self.connection_pool.getconn()
