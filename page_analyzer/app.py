@@ -14,6 +14,8 @@ from bs4 import BeautifulSoup
 load_dotenv()
 app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.logger.setLevel('INFO')
+
 DATABASE_URL = os.getenv('DATABASE_URL')
 urls_repo = UrlsRepository(DATABASE_URL)
 checks_repo = ChecksRepository(DATABASE_URL)
@@ -43,12 +45,13 @@ def urls_post():
     # Приводим URL к нужному виду и проверяем, нет ли его в базе данных
     trans_url = transform_url(url)
     same_url_data = urls_repo.find_by_url(trans_url)
+
     if same_url_data:
         flash('Страница уже существует', 'alert alert-info')
         return redirect(url_for('url_show', id=same_url_data['id']))
 
     # Подготавливаем данные и заносим в базу
-    url_data = prepare_url_data(url)
+    url_data = prepare_url_data(trans_url)
     urls_repo.save(url_data)
     flash('Страница успешно добавлена', 'alert alert-success')
     return redirect(url_for('url_show', id=url_data['id']))
@@ -60,6 +63,7 @@ def url_show(id):
     checks_data = checks_repo.find(id)
     if not url_data:
         abort(404)
+
     message = get_flashed_messages(with_categories=True)
     return render_template('url_show.html', url_data=url_data,
                            checks_data=checks_data, message=message)
@@ -70,18 +74,23 @@ def checks_post(id):
     url_data = urls_repo.find_by_id(id)
     if not url_data:
         abort(404)
-    # Делаем запрос по URL
+
+    app.logger.info("Отправляем HTTP запрос")
     resp = send_request(url_data['name'])
     if not resp:
+        app.logger.info(f"Не пришёл ответ от {url_data['name']}")
         flash('Произошла ошибка при проверке', 'alert alert-danger')
         return redirect(url_for('url_show', id=id))
 
+    app.logger.info(f"Пришёл ответ от {url_data['name']}")
     check_data = prepare_check_data({
         'url_id': id,
         'resp': resp
     })
-    # Подготавливаем данные и заносим в базу
+    app.logger.info(f"Добавляем проверку в базу")
     checks_repo.save(check_data)
+
+    app.logger.info(f"Проверка страницы c id = {id}  добавлена")
     flash('Страница успешно проверена', 'alert alert-success')
     return redirect(url_for('url_show', id=id))
 
@@ -147,6 +156,7 @@ def send_request(url):
         resp.raise_for_status()
         return resp
     except HTTPError:
+        app.logger.error('')
         if 400 <= resp.status_code < 500:
             return resp
     except Exception:
