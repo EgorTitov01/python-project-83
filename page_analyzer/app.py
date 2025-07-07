@@ -87,7 +87,6 @@ def checks_post(id):
         'url_id': id,
         'resp': resp
     })
-    app.logger.info(f"Добавляем проверку в базу")
     checks_repo.save(check_data)
 
     app.logger.info(f"Проверка страницы c id = {id}  добавлена")
