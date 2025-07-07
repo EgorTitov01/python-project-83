@@ -159,4 +159,4 @@ def send_request(url):
         if 400 <= resp.status_code < 500:
             return resp
     except Exception:
-        pass
+        return None

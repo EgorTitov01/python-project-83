@@ -1,13 +1,14 @@
-import psycopg2
 from psycopg2.extras import RealDictCursor
+from psycopg2.pool import SimpleConnectionPool
 
 
 class UrlsRepository:
     def __init__(self, db_url):
         self.db_url = db_url
+        self.connection_pool = SimpleConnectionPool(4, 5, self.db_url)
 
     def get_connection(self):
-        return psycopg2.connect(self.db_url)
+        return self.connection_pool.getconn()
 
     def get_content(self):
         with self.get_connection() as conn:
@@ -27,20 +28,29 @@ class UrlsRepository:
                 ) OR checks.id IS NULL
                 ORDER BY id DESC
                 ''')
-                return cur.fetchall()
+                result = cur.fetchall()
+
+        self.connection_pool.putconn(conn)
+        return result
 
     def find_by_url(self, parsed_url):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE name = %s",
                             (parsed_url,))
-                return cur.fetchone()
+                result = cur.fetchone()
+
+        self.connection_pool.putconn(conn)
+        return result
 
     def find_by_id(self, id):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE id = %s", (id,))
-                return cur.fetchone()
+                result = cur.fetchone()
+
+        self.connection_pool.putconn(conn)
+        return result
 
     def save(self, url_data):
         with self.get_connection() as conn:
@@ -54,6 +64,7 @@ class UrlsRepository:
                 url_data['id'] = cur.fetchone()[0]
 
             conn.commit()
+        self.connection_pool.putconn(conn)
         return url_data['id']
 
     def clear(self):
@@ -61,6 +72,7 @@ class UrlsRepository:
             with conn.cursor() as cur:
                 cur.execute("DELETE FROM urls")
             conn.commit()
+        self.connection_pool.putconn(conn)
 
     def refresh(self):
         self.clear()
@@ -68,27 +80,35 @@ class UrlsRepository:
             with conn.cursor() as cur:
                 cur.execute("ALTER SEQUENCE urls_id_seq RESTART")
             conn.commit()
+        self.connection_pool.putconn(conn)
 
 
 class ChecksRepository:
     def __init__(self, db_url):
         self.db_url = db_url
+        self.connection_pool = SimpleConnectionPool(4, 5, self.db_url)
 
     def get_connection(self):
-        return psycopg2.connect(self.db_url)
+        return self.connection_pool.getconn()
 
     def get_content(self):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM url_checks")
-                return cur.fetchall()
+                result = cur.fetchall()
+
+        self.connection_pool.putconn(conn)
+        return result
 
     def find(self, url_id):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM url_checks WHERE url_id = %s",
                             (url_id,))
-                return cur.fetchall()
+                result = cur.fetchall()
+
+        self.connection_pool.putconn(conn)
+        return result
 
     def save(self, check_data):
         with self.get_connection() as conn:
@@ -115,12 +135,14 @@ class ChecksRepository:
                     ))
 
             conn.commit()
+            self.connection_pool.putconn(conn)
 
     def clear(self):
         with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("DELETE FROM url_checks")
             conn.commit()
+            self.connection_pool.putconn(conn)
 
     def refresh(self):
         self.clear()
@@ -128,3 +150,4 @@ class ChecksRepository:
             with conn.cursor() as cur:
                 cur.execute("ALTER SEQUENCE url_checks_id_seq RESTART")
             conn.commit()
+            self.connection_pool.putconn(conn)
