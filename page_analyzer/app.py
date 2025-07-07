@@ -1,6 +1,5 @@
 from flask import Flask, render_template, \
      request, redirect, url_for, flash, get_flashed_messages, abort
-from dotenv import load_dotenv
 import os
 from urllib.parse import urlparse
 from validators.url import url as validate
@@ -9,16 +8,15 @@ from .repositories import UrlsRepository, ChecksRepository
 import requests
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 
 
 load_dotenv()
 app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.logger.setLevel('INFO')
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-urls_repo = UrlsRepository(DATABASE_URL)
-checks_repo = ChecksRepository(DATABASE_URL)
+urls_repo = UrlsRepository()
+checks_repo = ChecksRepository()
 
 
 @app.route('/')
@@ -75,21 +73,16 @@ def checks_post(id):
     if not url_data:
         abort(404)
 
-    app.logger.info("Отправляем HTTP запрос")
     resp = send_request(url_data['name'])
     if not resp:
-        app.logger.info(f"Не пришёл ответ от {url_data['name']}")
         flash('Произошла ошибка при проверке', 'alert alert-danger')
         return redirect(url_for('url_show', id=id))
 
-    app.logger.info(f"Пришёл ответ от {url_data['name']}")
     check_data = prepare_check_data({
         'url_id': id,
         'resp': resp
     })
     checks_repo.save(check_data)
-
-    app.logger.info(f"Проверка страницы c id = {id}  добавлена")
     flash('Страница успешно проверена', 'alert alert-success')
     return redirect(url_for('url_show', id=id))
 
@@ -155,7 +148,6 @@ def send_request(url):
         resp.raise_for_status()
         return resp
     except HTTPError:
-        app.logger.error('')
         if 400 <= resp.status_code < 500:
             return resp
     except Exception:
