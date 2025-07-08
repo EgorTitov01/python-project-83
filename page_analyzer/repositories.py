@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
-conn_pool = SimpleConnectionPool(4, 10, dsn=DATABASE_URL)
+conn_pool = SimpleConnectionPool(4, 5, dsn=DATABASE_URL)
 
 
 class UrlsRepository:
