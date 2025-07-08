@@ -1,8 +1,16 @@
 from psycopg2.extras import RealDictCursor
+from psycopg2.pool import SimpleConnectionPool
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+DATABASE_URL = os.getenv('DATABASE_URL')
+conn_pool = SimpleConnectionPool(4, 10, dsn=DATABASE_URL)
 
 
 class UrlsRepository:
-    def __init__(self, conn_pool):
+    def __init__(self):
         self.connection_pool = conn_pool
 
     def get_connection(self):
@@ -82,7 +90,7 @@ class UrlsRepository:
 
 
 class ChecksRepository:
-    def __init__(self, conn_pool):
+    def __init__(self):
         self.connection_pool = conn_pool
 
     def get_connection(self):
