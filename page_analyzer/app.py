@@ -17,7 +17,7 @@ app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 DATABASE_URL = os.getenv('DATABASE_URL')
-conn_pool = SimpleConnectionPool(5, 10, dsn=DATABASE_URL)
+conn_pool = SimpleConnectionPool(4, 10, dsn=DATABASE_URL)
 urls_repo = UrlsRepository(conn_pool)
 checks_repo = ChecksRepository(conn_pool)
 
