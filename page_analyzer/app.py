@@ -9,14 +9,17 @@ import requests
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from psycopg2.pool import SimpleConnectionPool
 
 
 load_dotenv()
 app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-urls_repo = UrlsRepository()
-checks_repo = ChecksRepository()
+DATABASE_URL = os.getenv('DATABASE_URL')
+conn_pool = SimpleConnectionPool(5, 10, dsn=DATABASE_URL)
+urls_repo = UrlsRepository(conn_pool)
+checks_repo = ChecksRepository(conn_pool)
 
 
 @app.route('/')
@@ -46,19 +49,19 @@ def urls_post():
 
     if same_url_data:
         flash('Страница уже существует', 'alert alert-info')
-        return redirect(url_for('url_show', id=same_url_data['id']))
+        return redirect(url_for('url_show', _id=same_url_data['id']))
 
     # Подготавливаем данные и заносим в базу
     url_data = prepare_url_data(trans_url)
     urls_repo.save(url_data)
     flash('Страница успешно добавлена', 'alert alert-success')
-    return redirect(url_for('url_show', id=url_data['id']))
+    return redirect(url_for('url_show', _id=url_data['id']))
 
 
-@app.route('/urls/<int:id>')
-def url_show(id):
-    url_data = urls_repo.find_by_id(id)
-    checks_data = checks_repo.find(id)
+@app.route('/urls/<int:_id>')
+def url_show(_id):
+    url_data = urls_repo.find_by_id(_id)
+    checks_data = checks_repo.find(_id)
     if not url_data:
         abort(404)
 
@@ -67,24 +70,24 @@ def url_show(id):
                            checks_data=checks_data, message=message)
 
 
-@app.post('/urls/<int:id>/checks')
-def checks_post(id):
-    url_data = urls_repo.find_by_id(id)
+@app.post('/urls/<int:_id>/checks')
+def checks_post(_id):
+    url_data = urls_repo.find_by_id(_id)
     if not url_data:
         abort(404)
 
     resp = send_request(url_data['name'])
     if not resp:
         flash('Произошла ошибка при проверке', 'alert alert-danger')
-        return redirect(url_for('url_show', id=id))
+        return redirect(url_for('url_show', _id=_id))
 
     check_data = prepare_check_data({
-        'url_id': id,
+        'url_id': _id,
         'resp': resp
     })
     checks_repo.save(check_data)
     flash('Страница успешно проверена', 'alert alert-success')
-    return redirect(url_for('url_show', id=id))
+    return redirect(url_for('url_show', _id=_id))
 
 
 @app.errorhandler(404)

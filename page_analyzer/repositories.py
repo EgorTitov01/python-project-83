@@ -1,16 +1,9 @@
 from psycopg2.extras import RealDictCursor
-from psycopg2.pool import SimpleConnectionPool
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
-connection_pool = SimpleConnectionPool(4, 5, dsn=DATABASE_URL)
 
 
 class UrlsRepository:
-    def __init__(self):
-        self.connection_pool = connection_pool
+    def __init__(self, conn_pool):
+        self.connection_pool = conn_pool
 
     def get_connection(self):
         return self.connection_pool.getconn()
@@ -48,10 +41,10 @@ class UrlsRepository:
         self.connection_pool.putconn(conn)
         return result
 
-    def find_by_id(self, id):
+    def find_by_id(self, _id):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("SELECT * FROM urls WHERE id = %s", (id,))
+                cur.execute("SELECT * FROM urls WHERE id = %s", (_id,))
                 result = cur.fetchone()
 
         self.connection_pool.putconn(conn)
@@ -89,8 +82,8 @@ class UrlsRepository:
 
 
 class ChecksRepository:
-    def __init__(self):
-        self.connection_pool = connection_pool
+    def __init__(self, conn_pool):
+        self.connection_pool = conn_pool
 
     def get_connection(self):
         return self.connection_pool.getconn()
