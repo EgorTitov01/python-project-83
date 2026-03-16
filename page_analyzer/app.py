@@ -46,19 +46,19 @@ def urls_post():
 
     if same_url_data:
         flash('Страница уже существует', 'alert alert-info')
-        return redirect(url_for('url_show', _id=same_url_data['id']))
+        return redirect(url_for('url_show', id_=same_url_data['id']))
 
     # Подготавливаем данные и заносим в базу
     url_data = prepare_url_data(trans_url)
     urls_repo.save(url_data)
     flash('Страница успешно добавлена', 'alert alert-success')
-    return redirect(url_for('url_show', _id=url_data['id']))
+    return redirect(url_for('url_show', id_=url_data['id']))
 
 
-@app.route('/urls/<int:_id>')
-def url_show(_id):
-    url_data = urls_repo.find_by_id(_id)
-    checks_data = checks_repo.find(_id)
+@app.route('/urls/<int:id_>')
+def url_show(id_):
+    url_data = urls_repo.find_by_id(id_)
+    checks_data = checks_repo.find(id_)
     if not url_data:
         abort(404)
 
@@ -67,24 +67,24 @@ def url_show(_id):
                            checks_data=checks_data, message=message)
 
 
-@app.post('/urls/<int:_id>/checks')
-def checks_post(_id):
-    url_data = urls_repo.find_by_id(_id)
+@app.post('/urls/<int:id_>/checks')
+def checks_post(id_):
+    url_data = urls_repo.find_by_id(id_)
     if not url_data:
         abort(404)
 
     resp = send_request(url_data['name'])
     if not resp:
         flash('Произошла ошибка при проверке', 'alert alert-danger')
-        return redirect(url_for('url_show', _id=_id))
+        return redirect(url_for('url_show', id_=id_))
 
     check_data = prepare_check_data({
-        'url_id': _id,
+        'url_id': id_,
         'resp': resp
     })
     checks_repo.save(check_data)
     flash('Страница успешно проверена', 'alert alert-success')
-    return redirect(url_for('url_show', _id=_id))
+    return redirect(url_for('url_show', id_=id_))
 
 
 @app.errorhandler(404)

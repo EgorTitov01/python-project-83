@@ -3,10 +3,10 @@ PORT ?= 8000
 install:
 	poetry install
 
-dev:
+dev: create_meta
 	poetry run flask --debug --app page_analyzer:app run
 
-start:
+start: create_meta
 	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
 
 render-start:
@@ -17,3 +17,6 @@ lint:
 
 test:
 	poetry run pytest
+
+create_meta:
+	python -m page_analyzer.meta_create_all
