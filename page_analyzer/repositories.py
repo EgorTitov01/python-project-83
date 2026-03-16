@@ -105,9 +105,9 @@ class ChecksRepository:
         with self.eng.begin() as conn:
             conn.execute(text("ALTER SEQUENCE url_checks_id_seq RESTART"))
 
+
 if __name__ == "__main__":
 
     ref = ChecksRepository()
     ref.clear()
     ref.refresh()
-
