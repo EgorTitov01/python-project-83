@@ -6,9 +6,10 @@ from .models import urls, url_checks
 
 
 load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
+DBAPI = 'postgresql+psycopg://'
+DBAPI_URL = DBAPI + os.getenv('DB_AUTH')
 db_pool = None
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DBAPI, echo=True)
 
 
 class UrlsRepository:
