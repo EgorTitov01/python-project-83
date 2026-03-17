@@ -9,7 +9,7 @@ load_dotenv()
 DBAPI = 'postgresql+psycopg://'
 DBAPI_URL = DBAPI + os.getenv('DB_AUTH')
 db_pool = None
-engine = create_engine(DBAPI, echo=True)
+engine = create_engine(DBAPI_URL, echo=True)
 
 
 class UrlsRepository:
