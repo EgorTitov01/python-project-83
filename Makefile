@@ -9,7 +9,7 @@ dev: create_meta
 start: create_meta
 	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
 
-render-start:
+render-start: create_meta
 	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
 
 lint:
@@ -19,4 +19,7 @@ test:
 	poetry run pytest
 
 create_meta:
-	python -m page_analyzer.meta_create_all
+	python -m page_analyzer.scripts.create_meta
+
+reset_meta:
+	python -m page_analyzer.scripts.reset_meta

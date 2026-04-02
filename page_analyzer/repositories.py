@@ -2,14 +2,13 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import (create_engine, select, delete, insert, func,
                         desc, text)
-from .models import urls, url_checks
+from page_analyzer.models import urls, url_checks
 
 
 load_dotenv()
 DBAPI = 'postgresql+psycopg://'
 DBAPI_URL = DBAPI + os.getenv('DB_AUTH')
-db_pool = None
-engine = create_engine(DBAPI_URL, echo=True)
+engine = create_engine(DBAPI_URL, pool_size=5)
 
 
 class UrlsRepository:
@@ -107,8 +106,10 @@ class ChecksRepository:
             conn.execute(text("ALTER SEQUENCE url_checks_id_seq RESTART"))
 
 
-if __name__ == "__main__":
-
+def db_reset():
     ref = ChecksRepository()
+    ref.clear()
+    ref.refresh()
+    ref = UrlsRepository()
     ref.clear()
     ref.refresh()
