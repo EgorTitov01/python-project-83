@@ -4,4 +4,3 @@ from page_analyzer.repositories import engine
 
 if __name__ == '__main__':
     metadata_obj.create_all(engine)
-
