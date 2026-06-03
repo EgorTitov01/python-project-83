@@ -9,7 +9,7 @@ load_dotenv()
 DB_URL = os.getenv('DATABASE_URL')
 
 # replace из-за того, что в тестах, похоже используется deprecated "postgres://
-DB_URL = DB_URL.replace('postgres', 'postgresql', 1)
+DB_URL = DB_URL.replace('postgres', 'postgresql+psycopg', 1)
 engine = create_engine(DB_URL, pool_size=5)
 
 
