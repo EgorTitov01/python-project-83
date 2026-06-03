@@ -5,7 +5,7 @@ install:
 
 create_meta:
 	alembic check || \
-	alembic revision --autogenerate -m 'initial' && alembic upgrade head
+	alembic revision --autogenerate -m 'alembic upgrade' && alembic upgrade head
 
 reset_meta:
 	alembic downgrade base

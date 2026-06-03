@@ -6,9 +6,8 @@ from page_analyzer.models import urls, url_checks
 
 
 load_dotenv()
-DBAPI = 'postgresql+psycopg://'
-DBAPI_URL = DBAPI + os.getenv('DB_AUTH')
-engine = create_engine(DBAPI_URL, pool_size=5)
+DB_URL = os.getenv('DATABASE_URL')
+engine = create_engine(DB_URL, pool_size=5)
 
 
 class UrlsRepository:
