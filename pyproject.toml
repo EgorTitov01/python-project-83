@@ -19,7 +19,6 @@ dependencies = [
     "sqlalchemy (>=2.0.43,<3.0.0)",
     "psycopg[binary] (>=3.3.3,<4.0.0)",
     "alembic (>=1.18.4,<2.0.0)",
-    "redis[hiredis] (>=7.4.0,<8.0.0)",
 ]
 
 [tool.poetry]
