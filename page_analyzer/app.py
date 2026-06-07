@@ -51,13 +51,13 @@ def urls_post():
     same_url_data = urls_repo.find_by_url(trans_url)
 
     if same_url_data:
-        flash('Страница уже существует', 'alert alert-info')
+        flash('Страница уже существует', "alert alert-info")
         return redirect(url_for('url_show', id_=same_url_data['id']))
 
     # Подготавливаем данные и заносим в базу
     url_data = prepare_url_data(trans_url)
     urls_repo.save(url_data)
-    flash('Страница успешно добавлена', 'alert alert-success')
+    flash('Страница успешно добавлена', "alert alert-success")
     return redirect(url_for('url_show', id_=url_data['id']))
 
 
@@ -82,7 +82,7 @@ def checks_post(id_):
 
     resp = send_request(url_data['name'])
     if not resp:
-        flash('Произошла ошибка при проверке', 'alert alert-danger')
+        flash('Произошла ошибка при проверке', "alert alert-danger")
         return redirect(url_for('url_show', id_=id_))
 
     check_data = prepare_check_data_for_db({
@@ -90,7 +90,7 @@ def checks_post(id_):
         'resp': resp
     })
     checks_repo.save(check_data)
-    flash('Страница успешно проверена', 'alert alert-success')
+    flash('Страница успешно проверена', "alert alert-success")
     return redirect(url_for('url_show', id_=id_))
 
 
@@ -101,7 +101,7 @@ def not_found(error):
 
 def transform_url(url):   # Убирает ненужные части URL
     parsed_url = urlparse(url)
-    return parsed_url.scheme + '://' + parsed_url.netloc
+    return parsed_url.scheme.lower() + '://' + parsed_url.netloc.lower()
 
 
 def is_valid(url_str):
