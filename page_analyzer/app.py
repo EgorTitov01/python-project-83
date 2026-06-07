@@ -66,9 +66,18 @@ def url_show(id_):
     if not url_data:
         abort(404)
 
+    prep_checks_data = []
+
+    for check_data in checks_data:
+        prep_check_data = {}
+        for tag, txt in check_data.items():
+            prep_check_data[tag] = cut_txt_by_length(txt)
+        prep_checks_data.append(prep_check_data)
+
+
     message = get_flashed_messages(with_categories=True)
     return render_template('url_show.html', url_data=url_data,
-                           checks_data=checks_data, message=message)
+                           checks_data=prep_checks_data, message=message)
 
 
 @app.post('/urls/<int:id_>/checks')
@@ -122,8 +131,11 @@ def parse_resp(resp):
     try:
         h1_content = ', '.join(el.get_text(strip=True)
                                for el in soup.body.find_all('h1'))
+
     except AttributeError:
         h1_content = ''
+
+
 
     return dict(title=title, description=str(description),
                 h1_content=h1_content)
@@ -156,3 +168,9 @@ def send_request(url):
             return resp
     except Exception:
         return None
+
+
+def cut_txt_by_length(txt: str, length: int = 200) -> str:
+    if len(txt) > length:
+        return txt[:length] + '...'
+    return txt
