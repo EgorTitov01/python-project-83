@@ -4,7 +4,6 @@ import os
 from urllib.parse import urlparse
 from validators.url import url as validate
 from datetime import date
-from .repositories import UrlsRepository, ChecksRepository
 import requests
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
@@ -14,6 +13,11 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+if 'postgresql+psycopg' not in os.getenv('DATABASE_URL'):
+    from .repos_psycopg import UrlsRepository, ChecksRepository
+else:
+    from .repositories import UrlsRepository, ChecksRepository
 
 urls_repo = UrlsRepository()
 checks_repo = ChecksRepository()

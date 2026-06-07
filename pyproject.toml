@@ -6,7 +6,7 @@ authors = [
     {name = "Egor Titov",email = "titov.egor1001@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.10"
 dependencies = [
     "flask (>=3.1.1,<4.0.0)",
     "flake8 (>=7.2.0,<8.0.0)",
@@ -19,6 +19,7 @@ dependencies = [
     "sqlalchemy (>=2.0.43,<3.0.0)",
     "psycopg[binary] (>=3.3.3,<4.0.0)",
     "alembic (>=1.18.4,<2.0.0)",
+    "psycopg2-binary (>=2.9.12,<3.0.0)",
 ]
 
 [tool.poetry]

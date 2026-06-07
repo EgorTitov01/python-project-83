@@ -78,6 +78,8 @@ POSTGRES_DB=page_analyzer
 DB_AUTH="${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PG_HOST}:${PG_PORT}/${POSTGRES_DB}"
 DATABASE_URL="postgresql+psycopg://${DB_AUTH}"
 ```
+При наличии 'postgres://' или 'postgresql://' в DATABASE_URL будет использован драйвер 'psycopg2'(для Хекслет-тестов),
+Для работы через Postgres-контейнер + SQLAlchemy используйте 'postgresql+psycopg://'.
 
 ## Запуск базы данных
 
