@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__, template_folder='../templates')
-app.config['SECRET_KEY'] = os.getenv('APP_SECRET_KEY')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 if 'postgresql+psycopg' not in os.getenv('DATABASE_URL'):
     from .repos_psycopg import UrlsRepository, ChecksRepository
