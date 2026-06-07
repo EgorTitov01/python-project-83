@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from flask import Flask, render_template, \
      request, redirect, url_for, flash, get_flashed_messages, abort
 import os
@@ -12,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__, template_folder='../templates')
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['SECRET_KEY'] = os.getenv('APP_SECRET_KEY')
 
 if 'postgresql+psycopg' not in os.getenv('DATABASE_URL'):
     from .repos_psycopg import UrlsRepository, ChecksRepository
@@ -66,15 +68,7 @@ def url_show(id_):
     if not url_data:
         abort(404)
 
-    prep_checks_data = []
-
-    for check_data in checks_data:
-        prep_check_data = {}
-        for tag, txt in check_data.items():
-            prep_check_data[tag] = cut_txt_by_length(txt)
-        prep_checks_data.append(prep_check_data)
-
-
+    prep_checks_data = prepare_checks_data_for_rndr(checks_data)
     message = get_flashed_messages(with_categories=True)
     return render_template('url_show.html', url_data=url_data,
                            checks_data=prep_checks_data, message=message)
@@ -91,7 +85,7 @@ def checks_post(id_):
         flash('Произошла ошибка при проверке', 'alert alert-danger')
         return redirect(url_for('url_show', id_=id_))
 
-    check_data = prepare_check_data({
+    check_data = prepare_check_data_for_db({
         'url_id': id_,
         'resp': resp
     })
@@ -135,8 +129,6 @@ def parse_resp(resp):
     except AttributeError:
         h1_content = ''
 
-
-
     return dict(title=title, description=str(description),
                 h1_content=h1_content)
 
@@ -145,7 +137,7 @@ def prepare_url_data(data):
     return {'name': data, 'created_at': date.today()}
 
 
-def prepare_check_data(data):
+def prepare_check_data_for_db(data):
     tags = {}
     status_code = data['resp'].status_code
     if status_code == 200:
@@ -174,3 +166,19 @@ def cut_txt_by_length(txt: str, length: int = 200) -> str:
     if len(txt) > length:
         return txt[:length] + '...'
     return txt
+
+
+def prepare_checks_data_for_rndr(checks_data: Iterable[dict]):
+    prep_checks_data = []
+    for check_data in checks_data:
+        prep_check_data = {}
+
+        for key, value in check_data.items():
+            if isinstance(value, str):
+                prep_check_data[key] = cut_txt_by_length(value)
+            else:
+                prep_check_data[key] = value
+
+        prep_checks_data.append(prep_check_data)
+
+    return prep_checks_data
